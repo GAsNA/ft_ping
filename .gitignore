@@ -1,0 +1,5 @@
+*.swp
+ft_ping
+obj/
+*.o
+*.a
