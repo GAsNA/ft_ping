@@ -4,7 +4,13 @@
 
 void	help(void)
 {
-	printf("This is help...\n");
+	printf("Usage\n");
+	printf("\tft_ping [options] <destination>\n");
+	printf("\n");
+	printf("Options:\n");
+	printf("\t<destination>\tdns name or ip address\n");
+	printf("\t-h\t\tprint help and exit\n");
+	printf("\t-v\t\tverbose output\n");
 }
 
 void	unknown_argument(void)
