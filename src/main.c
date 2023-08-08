@@ -13,9 +13,9 @@ void	help(void)
 	printf("\t-v\t\tverbose output\n");
 }
 
-void	unknown_argument(void)
+void	unknown_argument(char *arg)
 {
-	printf("This is unknown argument...\n");
+	printf("ft_ping: invalid argument: \"%s\"\n\n", arg);
 }
 
 int	main(int ac, char **av)
@@ -30,7 +30,7 @@ int	main(int ac, char **av)
 	{
 		if (!ft_strcmp(av[i], "-h")) { help(); return 0; }
 		if (!ft_strcmp(av[i], "-v")) { /*verbose*/ }
-		else if (av[i][0] == '-') { unknown_argument(); help(); return 1; }
+		else if (av[i][0] == '-') { unknown_argument(av[i]); help(); return 1; }
 		else { /*argument is to ping*/ }
 	}
 
