@@ -86,6 +86,7 @@ int	main(int ac, char **av)
 	signal(SIGINT, (void *)&stop);
 
 	close(socket_fd);
+	freeaddrinfo(result);
 
 	return 0;
 }
