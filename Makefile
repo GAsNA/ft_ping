@@ -40,4 +40,10 @@ fclean:			clean
 
 re:				fclean all
 
-.PHONY: all clean fclean re
+run:			all
+			sudo ./$(NAME) www.google.com
+
+valgrind:		all
+			sudo valgrind ./$(NAME) www.google.com
+
+.PHONY: all clean fclean re run

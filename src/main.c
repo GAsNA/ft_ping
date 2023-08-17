@@ -64,6 +64,17 @@ int	main(int ac, char **av)
 	struct addrinfo	*result;
 	if (getaddrinfo(addr, NULL, NULL, &result)) { unknown_name_service(addr); return 1; }
 
+	// SOCKET
+	int	socket_fd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
+	if (socket_fd < 0) { printf("ft_ping: error: creating socket failed\n"); return 1; }
+
+	// SETSOCKOPT
+	struct timeval	timeout;
+	timeout.tv_sec = 1;
+	timeout.tv_usec = 0;
+	if (setsockopt(socket_fd, SOL_SOCKET, SO_RCVTIMEO, (const char *)&timeout, sizeof(timeout)) == -1) {
+		printf("ft_ping: error: setsockopt failed\n"); return 1; }
+
 	// GET IP
 	struct sockaddr_in *dest = (struct sockaddr_in *)result->ai_addr;
 	char ip[INET_ADDRSTRLEN];
@@ -71,8 +82,10 @@ int	main(int ac, char **av)
 
 	printf("IP: %s\n", ip);
 
-	// HANDLING SIGNALS
+	// HANDLING SIGNAL
 	signal(SIGINT, (void *)&stop);
+
+	close(socket_fd);
 
 	return 0;
 }
