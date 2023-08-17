@@ -2,6 +2,8 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
+#include <arpa/inet.h>
+#include <signal.h>
 
 #include "../libft/libft.h"
 
@@ -31,6 +33,12 @@ void	unknown_name_service(char *name)
 	printf("ft_ping: %s: Name or service not known\n", name);
 }
 
+void	stop(int sig)
+{
+	(void)sig;
+	exit(0);
+}
+
 int	main(int ac, char **av)
 {
 	if (ac < 2)
@@ -52,8 +60,19 @@ int	main(int ac, char **av)
 
 	if (!addr) { no_destination_address(); return 1; }
 
+	// GET INFO FROM ADDRESS
 	struct addrinfo	*result;
 	if (getaddrinfo(addr, NULL, NULL, &result)) { unknown_name_service(addr); return 1; }
+
+	// GET IP
+	struct sockaddr_in *dest = (struct sockaddr_in *)result->ai_addr;
+	char ip[INET_ADDRSTRLEN];
+	inet_ntop(AF_INET, &(dest->sin_addr), ip, INET_ADDRSTRLEN);
+
+	printf("IP: %s\n", ip);
+
+	// HANDLING SIGNALS
+	signal(SIGINT, (void *)&stop);
 
 	return 0;
 }
