@@ -47,7 +47,7 @@ int	main(int ac, char **av)
 		return 1;
 	}
 
-	int	verbose = 0; (void)verbose;
+	int	verbose = 0;
 	char *addr;
 
 	for(int i = 1; i < ac; i++)
@@ -80,7 +80,13 @@ int	main(int ac, char **av)
 	char ip[INET_ADDRSTRLEN];
 	inet_ntop(AF_INET, &(dest->sin_addr), ip, INET_ADDRSTRLEN);
 
-	printf("IP: %s\n", ip);
+	int id = getpid();
+
+	// FIRST INFORMATION
+	printf("FT_PING %s (%s): %d data bytes", addr, ip, 56); // TODO what is 56 ?
+	if (verbose)
+		printf(", id 0x%x = %d", id, id);
+	printf("\n");
 
 	// HANDLING SIGNAL
 	signal(SIGINT, (void *)&stop);
