@@ -4,6 +4,8 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <signal.h>
+#include <netinet/ip_icmp.h>
+#include <unistd.h>
 
 #include "../libft/libft.h"
 
@@ -33,9 +35,14 @@ void	unknown_name_service(char *name)
 	printf("ft_ping: %s: Name or service not known\n", name);
 }
 
+struct addrinfo	*result;
+int				socket_fd;
+
 void	stop(int sig)
 {
 	(void)sig;
+	close(socket_fd);
+	freeaddrinfo(result);
 	exit(0);
 }
 
@@ -61,11 +68,10 @@ int	main(int ac, char **av)
 	if (!addr) { no_destination_address(); return 1; }
 
 	// GET INFO FROM ADDRESS
-	struct addrinfo	*result;
 	if (getaddrinfo(addr, NULL, NULL, &result)) { unknown_name_service(addr); return 1; }
 
 	// SOCKET
-	int	socket_fd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
+	socket_fd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
 	if (socket_fd < 0) { printf("ft_ping: error: creating socket failed\n"); return 1; }
 
 	// SETSOCKOPT
@@ -91,8 +97,15 @@ int	main(int ac, char **av)
 	// HANDLING SIGNAL
 	signal(SIGINT, (void *)&stop);
 
-	close(socket_fd);
-	freeaddrinfo(result);
+	int	nb = 0;
+	while (1)
+	{
+		nb++;
+		char buf[100] = "Hello";
+		ssize_t	res = sendto(socket_fd, buf, sizeof(buf), 0, result->ai_addr, result->ai_addrlen);
+		if (res == sizeof(buf)) { printf("SEND %d\n", nb); }
+		sleep(1);
+	}
 
 	return 0;
 }
