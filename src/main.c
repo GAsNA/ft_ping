@@ -6,6 +6,7 @@
 #include <signal.h>
 #include <netinet/ip_icmp.h>
 #include <unistd.h>
+#include <sys/time.h>
 
 #include "../libft/libft.h"
 
@@ -97,14 +98,23 @@ int	main(int ac, char **av)
 	// HANDLING SIGNAL
 	signal(SIGINT, (void *)&stop);
 
+	// LOOP
+	struct timeval	begin;
+	struct timeval	end;
+
 	int	nb = 0;
 	while (1)
 	{
+		gettimeofday(&begin, NULL);
 		nb++;
+		
+		// SEND PACKET
 		char buf[100] = "Hello";
 		ssize_t	res = sendto(socket_fd, buf, sizeof(buf), 0, result->ai_addr, result->ai_addrlen);
 		if (res == sizeof(buf)) { printf("SEND %d\n", nb); }
-		sleep(1);
+
+		// WAIT TILL TOTAL OF LOOP IS 1 SECOND
+		do { gettimeofday(&end, NULL); } while (end.tv_sec - begin.tv_sec < 1);
 	}
 
 	return 0;
