@@ -47,6 +47,21 @@ void	stop(int sig)
 	exit(0);
 }
 
+uint16_t calculate_icmp_checksum(void *data, size_t length)
+{
+	const uint16_t	*buf = data;
+	uint32_t		sum;
+
+	sum = 0;
+    while (length > 1) { sum += *buf++; length -= 2; }
+
+	if (length > 0) { sum += *(uint8_t *)buf; }
+
+	while (sum >> 16) { sum = (sum & 0xFFFF) + (sum >> 16); }
+
+    return (uint16_t)~sum;
+}
+
 int	main(int ac, char **av)
 {
 	if (ac < 2)
@@ -102,16 +117,25 @@ int	main(int ac, char **av)
 	struct timeval	begin;
 	struct timeval	end;
 
-	int	nb = 0;
+	struct icmphdr	icmp;
+	icmp.type = ICMP_ECHO;
+	icmp.code = 0;
+	icmp.checksum = 0;
+	icmp.un.echo.id = id;
+	icmp.un.echo.sequence = 0;
+	//icmp.un.gateway
+	//icmp.un.frag.__unused
+	//icmp.un.frag.mtu
 	while (1)
 	{
 		gettimeofday(&begin, NULL);
-		nb++;
+		
+		icmp.checksum = calculate_icmp_checksum((void*)&icmp, sizeof(icmp));
+		icmp.un.echo.sequence++;
 		
 		// SEND PACKET
-		char buf[100] = "Hello";
-		ssize_t	res = sendto(socket_fd, buf, sizeof(buf), 0, result->ai_addr, result->ai_addrlen);
-		if (res == sizeof(buf)) { printf("SEND %d\n", nb); }
+		ssize_t	res = sendto(socket_fd, &icmp, sizeof(icmp), 0, result->ai_addr, result->ai_addrlen);
+		if (res == sizeof(icmp)) { printf("SEND %d\n", icmp.un.echo.sequence); }
 
 		// WAIT TILL TOTAL OF LOOP IS 1 SECOND
 		do { gettimeofday(&end, NULL); } while (end.tv_sec - begin.tv_sec < 1);
