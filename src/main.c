@@ -11,6 +11,7 @@
 #include "../libft/libft.h"
 
 typedef struct s_ft_ping	t_ft_ping;
+typedef struct s_ping_list	t_ping_list;
 
 struct s_ft_ping
 {
@@ -19,6 +20,14 @@ struct s_ft_ping
 	char			*addr;
 	char			ip[INET_ADDRSTRLEN];
 	int				id;
+	t_ping_list		*list;
+};
+
+struct s_ping_list
+{
+	int				sequence;
+	struct timeval	time;
+	t_ping_list		*next;
 };
 
 t_ft_ping	g_ping;
@@ -54,6 +63,16 @@ void	stop(int sig)
 	(void)sig;
 	close(g_ping.socket_fd);
 	freeaddrinfo(g_ping.addrinfo);
+	
+	// CLEAR LIST
+	while (g_ping.list)
+	{
+		t_ping_list	*tmp = g_ping.list->next;
+		free(g_ping.list);
+		g_ping.list = tmp;
+	}
+	g_ping.list = NULL;
+
 	exit(0);
 }
 
@@ -144,6 +163,20 @@ int	main(int ac, char **av)
 		// SEND PACKET
 		ssize_t	res = sendto(g_ping.socket_fd, &icmp, sizeof(icmp), 0, g_ping.addrinfo->ai_addr, g_ping.addrinfo->ai_addrlen);
 		if (res == sizeof(icmp)) { printf("SEND %d\n", icmp.un.echo.sequence); }
+
+		// ADD TO LIST OF SENT PING
+		t_ping_list	*new = malloc(sizeof(t_ping_list));
+		if (!new) { printf("ft_ping: error: malloc failed."); stop(0); exit(1); }
+		new->sequence = icmp.un.echo.sequence;
+		new->time = begin;
+		new->next = NULL;
+		t_ping_list	*tmp = g_ping.list;
+		if (!g_ping.list) { g_ping.list = new; }
+		else
+		{
+			while (tmp->next) { tmp = tmp->next; }
+			tmp->next = new;
+		}
 
 		//TODO RECEIVE PACKET
 		// WAIT TILL TOTAL OF LOOP IS 1 SECOND
