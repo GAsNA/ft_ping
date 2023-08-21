@@ -199,6 +199,7 @@ int	main(int ac, char **av)
 			ssize_t	ret = recvmsg(g_ping.socket_fd, &msg, 0);
 			if (ret == -1) {
 				printf("RET: %zd.\t%s\n", ret, strerror(errno));
+
 				if (errno != EAGAIN) {
 					printf("ft_ping: error: recvmsg failed.\t%s\n", strerror(errno)); stop(0); exit(1);
 				}
