@@ -133,8 +133,7 @@ int	main(int ac, char **av)
 
 	// FIRST INFORMATION
 	printf("FT_PING %s (%s): %d data bytes", g_ping.addr, g_ping.ip, 56); // TODO what is 56 ?
-	if (verbose)
-		printf(", id 0x%x = %d", g_ping.id, g_ping.id);
+	if (verbose) { printf(", id 0x%x = %d", g_ping.id, g_ping.id); }
 	printf("\n");
 
 	// HANDLING SIGNAL
@@ -178,9 +177,49 @@ int	main(int ac, char **av)
 			tmp->next = new;
 		}
 
-		//TODO RECEIVE PACKET
 		// WAIT TILL TOTAL OF LOOP IS 1 SECOND
-		do { gettimeofday(&end, NULL); } while (end.tv_sec - begin.tv_sec < 1);
+		do
+		{
+			// RECEIVE PING
+			struct msghdr	msg; //TODO WHAT IN MSG
+			ssize_t	ret = recvmsg(g_ping.socket_fd, &msg, 0);
+			if (ret == -1) { printf("ft_ping: error: recvmsg failed."); stop(0); exit(1); }
+
+			//TODO IF ID IS DIFFERENT, CONTINUE
+
+			struct timeval	now;
+			gettimeofday(&now, NULL);
+
+			// GET TIME OF THE RECEIVED PING
+			struct timeval	time;
+			tmp = g_ping.list;
+			while (tmp)
+			{
+				if (tmp->sequence == icmp.un.echo.sequence) { time = tmp->time; }
+				tmp = tmp->next;
+			}
+
+			// CALCUL PING TIME
+			double diff = (now.tv_sec - time.tv_sec) * 1000 + (double)(now.tv_usec - time.tv_usec) / 1000;
+
+			// PRINT INFORMATIONS ABOUT THIS PACKET
+			printf("%zd bytes from [something] (%s): icmp_seq=%d ttl=%d time=%f ms\n", ret, g_ping.ip, 1, 1, diff);
+
+			// REMOVE THIS PACKET
+			/*tmp = g_ping.list;
+			while (tmp->next)
+			{
+				if (tmp->next->sequence == sequence_buf)
+				{
+					t_ping_list	*tmp1 = tmp->next->next;
+					free(tmp->next);
+					tmp->next = tmp1;
+				}
+				tmp = tmp->next;
+			}*/
+	
+			gettimeofday(&end, NULL);
+		} while (end.tv_sec - begin.tv_sec < 1);
 	}
 
 	return 0;
