@@ -206,7 +206,7 @@ int	main(int ac, char **av)
 				else { gettimeofday(&end, NULL); continue; }
 			}
 
-			struct timeval	now;
+			/*struct timeval	now;
 			gettimeofday(&now, NULL);
 
 			// GET TIME OF THE RECEIVED PING
@@ -219,10 +219,10 @@ int	main(int ac, char **av)
 			}
 
 			// CALCUL PING TIME
-			double diff = (now.tv_sec - time.tv_sec) * 1000 + (double)(now.tv_usec - time.tv_usec) / 1000;
+			double diff = (now.tv_sec - time.tv_sec) * 1000 + (double)(now.tv_usec - time.tv_usec) / 1000;*/
 
 			// PRINT INFORMATIONS ABOUT THIS PACKET
-			printf("%zd bytes from [something] (%s): icmp_seq=%d ttl=%d time=%f ms\n", ret, g_ping.ip, 1, 1, diff);
+			printf("%zd bytes from [something] (%s): icmp_seq=%d ttl=%d time=%f ms\n", ret, g_ping.ip, 1, 1, 1.0);
 
 			// REMOVE THIS PACKET
 			/*tmp = g_ping.list;
