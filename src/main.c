@@ -7,6 +7,8 @@
 #include <netinet/ip_icmp.h>
 #include <unistd.h>
 #include <sys/time.h>
+#include <string.h>
+#include <errno.h>
 
 #include "../libft/libft.h"
 
@@ -181,11 +183,27 @@ int	main(int ac, char **av)
 		do
 		{
 			// RECEIVE PING
-			struct msghdr	msg; //TODO WHAT IN MSG
+			char			buf[56 * 100];
+			struct iovec	iovec;
+			iovec.iov_base = &buf;
+			iovec.iov_len = sizeof(buf);
+			
+			struct msghdr	msg;
+			msg.msg_name = NULL;
+			msg.msg_namelen = 0;
+			msg.msg_iov = &iovec;
+			msg.msg_iovlen = 1;
+			msg.msg_control = NULL;
+			msg.msg_controllen = 0;
+			//msg.msg_flags = 0;
 			ssize_t	ret = recvmsg(g_ping.socket_fd, &msg, 0);
-			if (ret == -1) { printf("ft_ping: error: recvmsg failed."); stop(0); exit(1); }
-
-			//TODO IF ID IS DIFFERENT, CONTINUE
+			if (ret == -1) {
+				printf("RET: %zd.\t%s\n", ret, strerror(errno));
+				if (errno != EAGAIN) {
+					printf("ft_ping: error: recvmsg failed.\t%s\n", strerror(errno)); stop(0); exit(1);
+				}
+				else { gettimeofday(&end, NULL); continue; }
+			}
 
 			struct timeval	now;
 			gettimeofday(&now, NULL);
