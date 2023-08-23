@@ -41,12 +41,12 @@ fclean:			clean
 re:				fclean all
 
 run:			all
-			sudo ./$(NAME) www.google.com
+			sudo ./$(NAME) 1.1.1.1
 
 valgrind:			all
-			sudo valgrind ./$(NAME) www.google.com
+			sudo valgrind ./$(NAME) 1.1.1.1
 
 valgrind_detailed:		all
-			sudo valgrind --leak-check=full --leak-check=full --show-leak-kinds=all ./$(NAME) www.google.com
+			sudo valgrind --leak-check=full --leak-check=full --show-leak-kinds=all ./$(NAME) 1.1.1.1
 
 .PHONY: all clean fclean re run valgrind valgrind_detailed

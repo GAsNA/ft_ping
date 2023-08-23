@@ -32,6 +32,13 @@ struct s_ping_list
 	t_ping_list		*next;
 };
 
+typedef struct
+{
+	struct iphdr	ip;
+	struct icmphdr	icmp;
+	char			*data;
+}	t_recv;
+
 t_ft_ping	g_ping;
 
 void	no_destination_address(void)
@@ -162,8 +169,8 @@ int	main(int ac, char **av)
 		icmp.un.echo.sequence++;
 		
 		// SEND PACKET
-		ssize_t	res = sendto(g_ping.socket_fd, &icmp, sizeof(icmp), 0, g_ping.addrinfo->ai_addr, g_ping.addrinfo->ai_addrlen);
-		if (res == sizeof(icmp)) { printf("SEND %d\n", icmp.un.echo.sequence); }
+		/*ssize_t	res = */sendto(g_ping.socket_fd, &icmp, sizeof(icmp), 0, g_ping.addrinfo->ai_addr, g_ping.addrinfo->ai_addrlen);
+		//if (res == sizeof(icmp)) { printf("SEND %d\n", icmp.un.echo.sequence); }
 
 		// ADD TO LIST OF SENT PING
 		t_ping_list	*new = malloc(sizeof(t_ping_list));
@@ -183,7 +190,7 @@ int	main(int ac, char **av)
 		do
 		{
 			// RECEIVE PING
-			char			buf[56 * 100];
+			t_recv			buf;
 			struct iovec	iovec;
 			iovec.iov_base = &buf;
 			iovec.iov_len = sizeof(buf);
@@ -198,7 +205,7 @@ int	main(int ac, char **av)
 			//msg.msg_flags = 0;
 			ssize_t	ret = recvmsg(g_ping.socket_fd, &msg, 0);
 			if (ret == -1) {
-				printf("RET: %zd.\t%s\n", ret, strerror(errno));
+				//printf("RET: %zd.\t%s\n", ret, strerror(errno));
 
 				if (errno != EAGAIN) {
 					printf("ft_ping: error: recvmsg failed.\t%s\n", strerror(errno)); stop(0); exit(1);
@@ -206,7 +213,7 @@ int	main(int ac, char **av)
 				else { gettimeofday(&end, NULL); continue; }
 			}
 
-			/*struct timeval	now;
+			struct timeval	now;
 			gettimeofday(&now, NULL);
 
 			// GET TIME OF THE RECEIVED PING
@@ -214,29 +221,36 @@ int	main(int ac, char **av)
 			tmp = g_ping.list;
 			while (tmp)
 			{
-				if (tmp->sequence == buf_sequence) { time = tmp->time; }
+				if (tmp->sequence == buf.icmp.un.echo.sequence) { time = tmp->time; }
 				tmp = tmp->next;
 			}
 
 			// CALCUL PING TIME
-			double diff = (now.tv_sec - time.tv_sec) * 1000 + (double)(now.tv_usec - time.tv_usec) / 1000;*/
+			double diff = (now.tv_sec - time.tv_sec) * 1000 + (double)(now.tv_usec - time.tv_usec) / 1000;
 
 			// PRINT INFORMATIONS ABOUT THIS PACKET
-			printf("%zd bytes from [something] (%s): icmp_seq=%d ttl=%d time=%f ms\n", ret, g_ping.ip, 1, 1, 1.0);
+			printf("%zd bytes from %s: icmp_seq=%d ttl=%d time=%.1f ms\n", ret, g_ping.ip, buf.icmp.un.echo.sequence, buf.ip.ttl, diff);
 
 			// REMOVE THIS PACKET
-			/*tmp = g_ping.list;
-			while (tmp->next)
+			tmp = g_ping.list;
+			if (tmp->sequence == buf.icmp.un.echo.sequence)
 			{
-				if (tmp->next->sequence == buf_sequence)
+				g_ping.list = g_ping.list->next;
+				free(tmp);
+			}
+			else
+			{
+				while (tmp->next)
 				{
-					t_ping_list	*tmp1 = tmp->next->next;
-					free(tmp->next);
-					tmp->next = tmp1;
+					if (tmp->next->sequence == buf.icmp.un.echo.sequence)
+					{
+						t_ping_list	*tmp1 = tmp->next->next;
+						free(tmp->next);
+						tmp->next = tmp1;
+					} else { tmp = tmp->next; }
 				}
-				tmp = tmp->next;
-			}*/
-	
+			}
+
 			gettimeofday(&end, NULL);
 		} while (end.tv_sec - begin.tv_sec < 1);
 	}
