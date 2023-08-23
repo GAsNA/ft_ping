@@ -214,7 +214,7 @@ int	main(int ac, char **av)
 			tmp = g_ping.list;
 			while (tmp)
 			{
-				if (tmp->sequence == icmp.un.echo.sequence) { time = tmp->time; }
+				if (tmp->sequence == buf_sequence) { time = tmp->time; }
 				tmp = tmp->next;
 			}
 
@@ -228,7 +228,7 @@ int	main(int ac, char **av)
 			/*tmp = g_ping.list;
 			while (tmp->next)
 			{
-				if (tmp->next->sequence == sequence_buf)
+				if (tmp->next->sequence == buf_sequence)
 				{
 					t_ping_list	*tmp1 = tmp->next->next;
 					free(tmp->next);
