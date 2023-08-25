@@ -23,6 +23,7 @@ struct s_ft_ping
 	char			ip[INET_ADDRSTRLEN];
 	int				id;
 	t_ping_list		*list;
+	t_ping_list		*save;
 };
 
 struct s_ping_list
@@ -81,6 +82,11 @@ void	stop(int sig)
 		g_ping.list = tmp;
 	}
 	g_ping.list = NULL;
+
+	// LAST INFORMATIONS
+	printf("\n--- %s ping statistics ---\n", g_ping.addr);
+	printf("[NB] packets transmitted, [NB] packets received, [NB]%% packet loss, time [NB]ms\n");
+	printf("rtt min/avg/max/mdev = [NB]/[NB]/[NB]/[NB] ms");
 
 	exit(0);
 }
@@ -233,8 +239,10 @@ int	main(int ac, char **av)
 			// PRINT INFORMATIONS ABOUT THIS PACKET
 			printf("%zd bytes from %s: icmp_seq=%d ttl=%d time=%.1f ms\n", ret, g_ping.ip, buf.icmp.un.echo.sequence, buf.ip.ttl, diff);
 
+			//TODO MOVE THIS PACKET IN SAVE LIST
+			
 			// REMOVE THIS PACKET
-			tmp = g_ping.list;
+			/*tmp = g_ping.list;
 			if (tmp->sequence == buf.icmp.un.echo.sequence)
 			{
 				g_ping.list = g_ping.list->next;
@@ -251,7 +259,7 @@ int	main(int ac, char **av)
 						tmp->next = tmp1;
 					} else { tmp = tmp->next; }
 				}
-			}
+			}*/
 
 			gettimeofday(&end, NULL);
 		} while (end.tv_sec - begin.tv_sec < 1);
