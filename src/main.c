@@ -213,6 +213,8 @@ int	main(int ac, char **av)
 				else { gettimeofday(&end, NULL); continue; }
 			}
 
+			if (buf.icmp.un.echo.id != g_ping.id) { gettimeofday(&end, NULL); continue; }
+
 			struct timeval	now;
 			gettimeofday(&now, NULL);
 
