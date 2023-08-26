@@ -41,17 +41,7 @@ void	stop(int sig)
 	freeaddrinfo(g_ping.addrinfo);
 	
 	// LAST INFORMATIONS
-	double	loss = (g_ping.sent - g_ping.received) * 100 / g_ping.sent;
-	double	min = 0.0;
-	double	max = 0.0;
-	double	avg = 0.0;
-	double	mdev = 0.0;
-
-	get_stats_time(&min, &max, &avg, &mdev);
-
-	printf("\n--- %s ping statistics ---\n", g_ping.addr);
-	printf("%d packets transmitted, %d packets received, %.0f%% packet loss, time [NB]ms\n", g_ping.sent, g_ping.received, loss);
-	printf("rtt min/avg/max/mdev = %.3f/%.3f/%.3f/%.3f ms", min, avg, max, mdev);
+	last_information();
 
 	// CLEAR LIST
 	clear_list(g_ping.list);
@@ -68,15 +58,16 @@ int	main(int ac, char **av)
 		return 1;
 	}
 
-	int	verbose = 0;
+	(void)av;
 
+	g_ping.verbose = 0;
 	g_ping.sent = 0;
 	g_ping.received = 0;
 
 	for(int i = 1; i < ac; i++)
 	{
 		if (!ft_strcmp(av[i], "-h")) { help(); return 0; }
-		else if (!ft_strcmp(av[i], "-v")) { verbose = 1; }
+		else if (!ft_strcmp(av[i], "-v")) { g_ping.verbose = 1; }
 		else if (av[i][0] == '-') { unknown_argument(av[i]); help(); return 1; }
 		else { g_ping.addr = av[i]; }
 	}
@@ -104,9 +95,7 @@ int	main(int ac, char **av)
 	g_ping.id = getpid();
 
 	// FIRST INFORMATION
-	printf("FT_PING %s (%s): %d data bytes", g_ping.addr, g_ping.ip, 56); // TODO what is 56 ?
-	if (verbose) { printf(", id 0x%x = %d", g_ping.id, g_ping.id); }
-	printf("\n");
+	first_information();
 
 	// HANDLING SIGNAL
 	signal(SIGINT, (void *)&stop);

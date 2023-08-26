@@ -20,6 +20,7 @@ typedef struct s_ping_list	t_ping_list;
 
 struct s_ft_ping
 {
+	int				verbose;
 	struct addrinfo	*addrinfo;
 	int				socket_fd;
 	char			*addr;
@@ -46,6 +47,8 @@ typedef struct
 	char			*data;
 }	t_recv;
 
+extern t_ft_ping	g_ping;
+
 // MAIN.C
 void		get_stats_time(double *min, double *max, double *avg, double *mdev);
 void		stop(int sig);
@@ -62,5 +65,7 @@ void		no_destination_address(void);
 void		help(void);
 void		unknown_argument(char *arg);
 void		unknown_name_service(char *name);
+void		first_information(void);
+void		last_information(void);
 
 #endif
