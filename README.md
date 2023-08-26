@@ -11,6 +11,7 @@ Compile the library with ``make``.
 ## TODO
 - data bytes in first info
 - time in last info
+- verbose
 
 ## Author
 [![rleseur's 42 stats](https://badge42.vercel.app/api/v2/cl7s08vet00110gmnrmm2benl/stats?cursusId=21&coalitionId=45)](https://github.com/JaeSeoKim/badge42)
