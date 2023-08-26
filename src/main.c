@@ -71,21 +71,58 @@ void	unknown_name_service(char *name)
 	printf("ft_ping: %s: Name or service not known\n", name);
 }
 
-void	get_stats_time(double *min, double *max)
+double sqrt(double x) {
+	double result = 1.0;
+	for (int i = 0; i < 100; ++i) {
+		result = (result + x / result) / 2;
+	}
+	return result;
+}
+
+double pow(double x, double y) {
+	if (x == 0) {
+		return 0.0;
+	}
+	if (y == 0) {
+		return 1.0;
+	}
+	double result = 1.0;
+	for (int i = 0; i < y; ++i) {
+		result *= x;
+	}
+	return result;
+}
+
+void	get_stats_time(double *min, double *max, double *avg, double *mdev)
 {
 	t_ping_list	*tmp = g_ping.save;
 	if (!tmp) { return; }
+
+	*avg = tmp->diff;
+	int		total = 1;
 
 	*min = tmp->diff;
 	*max = tmp->diff;
 	tmp = tmp->next;
 
+	// stddev
+	// https://www.programiz.com/cpp-programming/examples/standard-deviation#google_vignette
+
 	while (tmp)
 	{
 		if (*min > tmp->diff) { *min = tmp->diff; }
 		if (*max < tmp->diff) { *max = tmp->diff; }
+		*avg += tmp->diff;
+		total++;
 		tmp = tmp->next;
 	}
+
+	*avg /= total;
+
+	tmp = g_ping.save;
+	while (tmp) { *mdev += pow(tmp->diff - *avg, 2); tmp = tmp->next; }
+
+	*mdev = sqrt(*mdev / total);
 }
 
 void	stop(int sig)
@@ -107,12 +144,14 @@ void	stop(int sig)
 	double	loss = (g_ping.sent - g_ping.received) * 100 / g_ping.sent;
 	double	min = 0.0;
 	double	max = 0.0;
+	double	avg = 0.0;
+	double	mdev = 0.0;
 
-	get_stats_time(&min, &max);
+	get_stats_time(&min, &max, &avg, &mdev);
 
 	printf("\n--- %s ping statistics ---\n", g_ping.addr);
 	printf("%d packets transmitted, %d packets received, %.0f%% packet loss, time [NB]ms\n", g_ping.sent, g_ping.received, loss);
-	printf("rtt min/avg/max/mdev = %.3f/[NB]/%.3f/[NB] ms\n", min, max);
+	printf("rtt min/avg/max/mdev = %.3f/%.3f/%.3f/%.3f ms", min, avg, max, mdev);
 
 	exit(0);
 }
