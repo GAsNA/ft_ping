@@ -2,7 +2,7 @@
 
 The goal of this project is to re-coding the ping command. It let me get acquainted with TCP/IP communication between two machines on a network.
 <br />
-Compile the library with ``make``.
+Compile with ``make``.
 
 ## Options
 - ``-v``
@@ -12,6 +12,7 @@ Compile the library with ``make``.
 - data bytes in first info
 - time in last info
 - verbose
+- DNS
 
 ## Author
 [![rleseur's 42 stats](https://badge42.vercel.app/api/v2/cl7s08vet00110gmnrmm2benl/stats?cursusId=21&coalitionId=45)](https://github.com/JaeSeoKim/badge42)
