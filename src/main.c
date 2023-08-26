@@ -34,9 +34,8 @@ void	get_stats_time(double *min, double *max, double *avg, double *mdev)
 	*mdev = sqrt(*mdev / total);
 }
 
-void	stop(int sig)
+void	clear_all(void)
 {
-	(void)sig;
 	close(g_ping.socket_fd);
 	freeaddrinfo(g_ping.addrinfo);
 	
@@ -46,7 +45,12 @@ void	stop(int sig)
 	// CLEAR LIST
 	clear_list(g_ping.list);
 	clear_list(g_ping.save);
+}
 
+void	stop(int sig)
+{
+	(void)sig;
+	clear_all();
 	exit(0);
 }
 
@@ -126,7 +130,7 @@ int	main(int ac, char **av)
 
 		// ADD TO LIST OF SENT PING
 		t_ping_list	*new = malloc(sizeof(t_ping_list));
-		if (!new) { printf("ft_ping: error: malloc failed."); stop(0); exit(1); }
+		if (!new) { printf("ft_ping: error: malloc failed."); clear_all(); exit(1); }
 		new->sequence = icmp.un.echo.sequence;
 		new->time = begin;
 		new->next = NULL;
@@ -154,7 +158,7 @@ int	main(int ac, char **av)
 				//printf("RET: %zd.\t%s\n", ret, strerror(errno));
 
 				if (errno != EAGAIN) {
-					printf("ft_ping: error: recvmsg failed.\t%s\n", strerror(errno)); stop(0); exit(1);
+					printf("ft_ping: error: recvmsg failed.\t%s\n", strerror(errno)); clear_all(); exit(1);
 				}
 				else { gettimeofday(&end, NULL); continue; }
 			}

@@ -52,6 +52,7 @@ extern t_ft_ping	g_ping;
 // MAIN.C
 void		get_stats_time(double *min, double *max, double *avg, double *mdev);
 void		stop(int sig);
+void		clear_all(void);
 
 // UTILS.C
 uint16_t	calculate_icmp_checksum(void *data, size_t length);
