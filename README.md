@@ -1,8 +1,12 @@
 # ft_ping
 
 The goal of this project is to re-coding the ping command. It let me get acquainted with TCP/IP communication between two machines on a network.
+
 <br />
+
 Compile with ``make``.
+<br />
+Launch a test with ``make run``.
 
 ## Options
 - ``-v``
