@@ -125,21 +125,23 @@ void	get_stats_time(double *min, double *max, double *avg, double *mdev)
 	*mdev = sqrt(*mdev / total);
 }
 
+void	clear_list(t_ping_list *list)
+{
+	while (list)
+	{
+		t_ping_list	*tmp = list->next;
+		free(list);
+		list = tmp;
+	}
+	list = NULL;
+}
+
 void	stop(int sig)
 {
 	(void)sig;
 	close(g_ping.socket_fd);
 	freeaddrinfo(g_ping.addrinfo);
 	
-	// CLEAR LIST
-	while (g_ping.list)
-	{
-		t_ping_list	*tmp = g_ping.list->next;
-		free(g_ping.list);
-		g_ping.list = tmp;
-	}
-	g_ping.list = NULL;
-
 	// LAST INFORMATIONS
 	double	loss = (g_ping.sent - g_ping.received) * 100 / g_ping.sent;
 	double	min = 0.0;
@@ -152,6 +154,10 @@ void	stop(int sig)
 	printf("\n--- %s ping statistics ---\n", g_ping.addr);
 	printf("%d packets transmitted, %d packets received, %.0f%% packet loss, time [NB]ms\n", g_ping.sent, g_ping.received, loss);
 	printf("rtt min/avg/max/mdev = %.3f/%.3f/%.3f/%.3f ms", min, avg, max, mdev);
+
+	// CLEAR LIST
+	clear_list(g_ping.list);
+	clear_list(g_ping.save);
 
 	exit(0);
 }
@@ -339,26 +345,6 @@ int	main(int ac, char **av)
 				}
 			}
 			
-			// REMOVE THIS PACKET
-			/*tmp = g_ping.list;
-			if (tmp->sequence == buf.icmp.un.echo.sequence)
-			{
-				g_ping.list = g_ping.list->next;
-				free(tmp);
-			}
-			else
-			{
-				while (tmp->next)
-				{
-					if (tmp->next->sequence == buf.icmp.un.echo.sequence)
-					{
-						t_ping_list	*tmp1 = tmp->next->next;
-						free(tmp->next);
-						tmp->next = tmp1;
-					} else { tmp = tmp->next; }
-				}
-			}*/
-
 			gettimeofday(&end, NULL);
 		} while (end.tv_sec - begin.tv_sec < 1);
 	}
