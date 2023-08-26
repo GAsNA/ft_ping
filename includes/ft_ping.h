@@ -53,6 +53,9 @@ extern t_ft_ping	g_ping;
 void		get_stats_time(double *min, double *max, double *avg, double *mdev);
 void		stop(int sig);
 void		clear_all(void);
+void		init(int ac, char **av);
+void		send_packet(struct icmphdr *icmp, struct timeval begin);
+void		receive_packet(void);
 
 // UTILS.C
 uint16_t	calculate_icmp_checksum(void *data, size_t length);
