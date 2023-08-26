@@ -32,6 +32,7 @@ struct s_ping_list
 {
 	int				sequence;
 	struct timeval	time;
+	double			diff;
 	t_ping_list		*next;
 };
 
@@ -70,6 +71,23 @@ void	unknown_name_service(char *name)
 	printf("ft_ping: %s: Name or service not known\n", name);
 }
 
+void	get_stats_time(double *min, double *max)
+{
+	t_ping_list	*tmp = g_ping.save;
+	if (!tmp) { return; }
+
+	*min = tmp->diff;
+	*max = tmp->diff;
+	tmp = tmp->next;
+
+	while (tmp)
+	{
+		if (*min > tmp->diff) { *min = tmp->diff; }
+		if (*max < tmp->diff) { *max = tmp->diff; }
+		tmp = tmp->next;
+	}
+}
+
 void	stop(int sig)
 {
 	(void)sig;
@@ -86,11 +104,15 @@ void	stop(int sig)
 	g_ping.list = NULL;
 
 	// LAST INFORMATIONS
-	float loss = (g_ping.sent - g_ping.received) * 100 / g_ping.sent;
+	double	loss = (g_ping.sent - g_ping.received) * 100 / g_ping.sent;
+	double	min = 0.0;
+	double	max = 0.0;
+
+	get_stats_time(&min, &max);
 
 	printf("\n--- %s ping statistics ---\n", g_ping.addr);
 	printf("%d packets transmitted, %d packets received, %.0f%% packet loss, time [NB]ms\n", g_ping.sent, g_ping.received, loss);
-	printf("rtt min/avg/max/mdev = [NB]/[NB]/[NB]/[NB] ms");
+	printf("rtt min/avg/max/mdev = %.3f/[NB]/%.3f/[NB] ms\n", min, max);
 
 	exit(0);
 }
@@ -108,6 +130,17 @@ uint16_t calculate_icmp_checksum(void *data, size_t length)
 	while (sum >> 16) { sum = (sum & 0xFFFF) + (sum >> 16); }
 
     return (uint16_t)~sum;
+}
+
+void	add_to_list(t_ping_list **list, t_ping_list *new)
+{
+	t_ping_list	*tmp = *list;
+	if (!*list) { *list = new; }
+	else
+	{
+		while (tmp->next) { tmp = tmp->next; }
+		tmp->next = new;
+	}
 }
 
 int	main(int ac, char **av)
@@ -191,13 +224,7 @@ int	main(int ac, char **av)
 		new->sequence = icmp.un.echo.sequence;
 		new->time = begin;
 		new->next = NULL;
-		t_ping_list	*tmp = g_ping.list;
-		if (!g_ping.list) { g_ping.list = new; }
-		else
-		{
-			while (tmp->next) { tmp = tmp->next; }
-			tmp->next = new;
-		}
+		add_to_list(&g_ping.list, new);
 
 		// WAIT TILL TOTAL OF LOOP IS 1 SECOND
 		do
@@ -234,21 +261,44 @@ int	main(int ac, char **av)
 			gettimeofday(&now, NULL);
 
 			// GET TIME OF THE RECEIVED PING
-			struct timeval	time;
-			tmp = g_ping.list;
-			while (tmp)
+			t_ping_list	*received_ping = g_ping.list;
+			while (received_ping)
 			{
-				if (tmp->sequence == buf.icmp.un.echo.sequence) { time = tmp->time; }
-				tmp = tmp->next;
+				if (received_ping->sequence == buf.icmp.un.echo.sequence) { break; }
+				received_ping = received_ping->next;
 			}
+			struct timeval	time = received_ping->time;
 
 			// CALCUL PING TIME
 			double diff = (now.tv_sec - time.tv_sec) * 1000 + (double)(now.tv_usec - time.tv_usec) / 1000;
+			received_ping->diff = diff;
 
 			// PRINT INFORMATIONS ABOUT THIS PACKET
-			printf("%zd bytes from %s: icmp_seq=%d ttl=%d time=%.1f ms\n", ret, g_ping.ip, buf.icmp.un.echo.sequence, buf.ip.ttl, diff);
+			printf("%zd bytes from %s: icmp_seq=%d ttl=%d time=%.2f ms\n", ret, g_ping.ip, buf.icmp.un.echo.sequence, buf.ip.ttl, diff);
 
-			//TODO MOVE THIS PACKET IN SAVE LIST
+			//MOVE THIS PACKET IN SAVE LIST
+			t_ping_list	*tmp = g_ping.list;
+			if (tmp->sequence == buf.icmp.un.echo.sequence)
+			{
+				g_ping.list = g_ping.list->next;
+				tmp->next = NULL;
+				add_to_list(&g_ping.save, tmp);
+			}
+			else
+			{
+				while (tmp->next)
+				{
+					if (tmp->next->sequence == buf.icmp.un.echo.sequence)
+					{
+						t_ping_list	*save = tmp->next;
+						tmp->next = tmp->next->next;
+						save->next = NULL;
+						add_to_list(&g_ping.save, save);
+						break;
+					}
+					tmp = tmp->next;
+				}
+			}
 			
 			// REMOVE THIS PACKET
 			/*tmp = g_ping.list;
