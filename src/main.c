@@ -22,6 +22,8 @@ struct s_ft_ping
 	char			*addr;
 	char			ip[INET_ADDRSTRLEN];
 	int				id;
+	int				sent;
+	int				received;
 	t_ping_list		*list;
 	t_ping_list		*save;
 };
@@ -84,8 +86,10 @@ void	stop(int sig)
 	g_ping.list = NULL;
 
 	// LAST INFORMATIONS
+	float loss = (g_ping.sent - g_ping.received) * 100 / g_ping.sent;
+
 	printf("\n--- %s ping statistics ---\n", g_ping.addr);
-	printf("[NB] packets transmitted, [NB] packets received, [NB]%% packet loss, time [NB]ms\n");
+	printf("%d packets transmitted, %d packets received, %.0f%% packet loss, time [NB]ms\n", g_ping.sent, g_ping.received, loss);
 	printf("rtt min/avg/max/mdev = [NB]/[NB]/[NB]/[NB] ms");
 
 	exit(0);
@@ -115,6 +119,9 @@ int	main(int ac, char **av)
 	}
 
 	int	verbose = 0;
+
+	g_ping.sent = 0;
+	g_ping.received = 0;
 
 	for(int i = 1; i < ac; i++)
 	{
@@ -175,8 +182,8 @@ int	main(int ac, char **av)
 		icmp.un.echo.sequence++;
 		
 		// SEND PACKET
-		/*ssize_t	res = */sendto(g_ping.socket_fd, &icmp, sizeof(icmp), 0, g_ping.addrinfo->ai_addr, g_ping.addrinfo->ai_addrlen);
-		//if (res == sizeof(icmp)) { printf("SEND %d\n", icmp.un.echo.sequence); }
+		ssize_t	res = sendto(g_ping.socket_fd, &icmp, sizeof(icmp), 0, g_ping.addrinfo->ai_addr, g_ping.addrinfo->ai_addrlen);
+		if (res == sizeof(icmp)) { g_ping.sent++; }
 
 		// ADD TO LIST OF SENT PING
 		t_ping_list	*new = malloc(sizeof(t_ping_list));
@@ -220,6 +227,8 @@ int	main(int ac, char **av)
 			}
 
 			if (buf.icmp.un.echo.id != g_ping.id) { gettimeofday(&end, NULL); continue; }
+
+			g_ping.received++;
 
 			struct timeval	now;
 			gettimeofday(&now, NULL);
