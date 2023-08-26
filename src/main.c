@@ -1,97 +1,6 @@
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <arpa/inet.h>
-#include <signal.h>
-#include <netinet/ip_icmp.h>
-#include <unistd.h>
-#include <sys/time.h>
-#include <string.h>
-#include <errno.h>
-
-#include "../libft/libft.h"
-
-typedef struct s_ft_ping	t_ft_ping;
-typedef struct s_ping_list	t_ping_list;
-
-struct s_ft_ping
-{
-	struct addrinfo	*addrinfo;
-	int				socket_fd;
-	char			*addr;
-	char			ip[INET_ADDRSTRLEN];
-	int				id;
-	int				sent;
-	int				received;
-	t_ping_list		*list;
-	t_ping_list		*save;
-};
-
-struct s_ping_list
-{
-	int				sequence;
-	struct timeval	time;
-	double			diff;
-	t_ping_list		*next;
-};
-
-typedef struct
-{
-	struct iphdr	ip;
-	struct icmphdr	icmp;
-	char			*data;
-}	t_recv;
+# include "ft_ping.h"
 
 t_ft_ping	g_ping;
-
-void	no_destination_address(void)
-{
-	printf("ft_ping: usage error: Destination address required\n");
-}
-
-void	help(void)
-{
-	printf("\nUsage\n");
-	printf("\tft_ping [options] <destination>\n");
-	printf("\n");
-	printf("Options:\n");
-	printf("\t<destination>\tdns name or ip address\n");
-	printf("\t-h\t\tprint help and exit\n");
-	printf("\t-v\t\tverbose output\n");
-}
-
-void	unknown_argument(char *arg)
-{
-	printf("ft_ping: invalid argument: \"%s\"\n", arg);
-}
-
-void	unknown_name_service(char *name)
-{
-	printf("ft_ping: %s: Name or service not known\n", name);
-}
-
-double sqrt(double x) {
-	double result = 1.0;
-	for (int i = 0; i < 100; ++i) {
-		result = (result + x / result) / 2;
-	}
-	return result;
-}
-
-double pow(double x, double y) {
-	if (x == 0) {
-		return 0.0;
-	}
-	if (y == 0) {
-		return 1.0;
-	}
-	double result = 1.0;
-	for (int i = 0; i < y; ++i) {
-		result *= x;
-	}
-	return result;
-}
 
 void	get_stats_time(double *min, double *max, double *avg, double *mdev)
 {
@@ -125,17 +34,6 @@ void	get_stats_time(double *min, double *max, double *avg, double *mdev)
 	*mdev = sqrt(*mdev / total);
 }
 
-void	clear_list(t_ping_list *list)
-{
-	while (list)
-	{
-		t_ping_list	*tmp = list->next;
-		free(list);
-		list = tmp;
-	}
-	list = NULL;
-}
-
 void	stop(int sig)
 {
 	(void)sig;
@@ -160,32 +58,6 @@ void	stop(int sig)
 	clear_list(g_ping.save);
 
 	exit(0);
-}
-
-uint16_t calculate_icmp_checksum(void *data, size_t length)
-{
-	const uint16_t	*buf = data;
-	uint32_t		sum;
-
-	sum = 0;
-    while (length > 1) { sum += *buf++; length -= 2; }
-
-	if (length > 0) { sum += *(uint8_t *)buf; }
-
-	while (sum >> 16) { sum = (sum & 0xFFFF) + (sum >> 16); }
-
-    return (uint16_t)~sum;
-}
-
-void	add_to_list(t_ping_list **list, t_ping_list *new)
-{
-	t_ping_list	*tmp = *list;
-	if (!*list) { *list = new; }
-	else
-	{
-		while (tmp->next) { tmp = tmp->next; }
-		tmp->next = new;
-	}
 }
 
 int	main(int ac, char **av)
