@@ -39,9 +39,6 @@ void	clear_all(void)
 	close(g_ping.socket_fd);
 	freeaddrinfo(g_ping.addrinfo);
 	
-	// LAST INFORMATIONS
-	last_information();
-
 	// CLEAR LIST
 	clear_list(g_ping.list);
 	clear_list(g_ping.save);
@@ -50,6 +47,7 @@ void	clear_all(void)
 void	stop(int sig)
 {
 	(void)sig;
+	last_information();
 	clear_all();
 	exit(0);
 }

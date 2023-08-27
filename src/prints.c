@@ -35,7 +35,7 @@ void	first_information(void)
 
 void	last_information(void)
 {
-	double	loss = (g_ping.sent - g_ping.received) * 100 / g_ping.sent;
+	double	loss = g_ping.sent != 0 ? (g_ping.sent - g_ping.received) * 100 / g_ping.sent : 0;
 	double	min = 0.0;
 	double	max = 0.0;
 	double	avg = 0.0;
