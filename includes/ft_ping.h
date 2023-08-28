@@ -58,11 +58,11 @@ void		send_packet(struct icmphdr *icmp, struct timeval begin);
 void		receive_packet(void);
 
 // UTILS.C
-uint16_t	calculate_icmp_checksum(void *data, size_t length);
-void		add_to_list(t_ping_list **list, t_ping_list *new);
-void		clear_list(t_ping_list *list);
-double		sqrt(double x);
-double		pow(double x, double y);
+unsigned short	calculate_icmp_checksum(unsigned short *buf, size_t length);
+void			add_to_list(t_ping_list **list, t_ping_list *new);
+void			clear_list(t_ping_list *list);
+double			sqrt(double x);
+double			pow(double x, double y);
 
 // PRINTS.C
 void		no_destination_address(void);

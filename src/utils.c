@@ -1,18 +1,17 @@
 #include "ft_ping.h"
 
-uint16_t calculate_icmp_checksum(void *data, size_t length)
+// https://stackoverflow.com/questions/36105998/icmp-header-and-ip-header-checksum-calculations
+unsigned short calculate_icmp_checksum(unsigned short *buf, size_t length)
 {
-	const uint16_t	*buf = data;
-	uint32_t		sum;
+	long			sum = 0;
 
-	sum = 0;
     while (length > 1) { sum += *buf++; length -= 2; }
 
-	if (length > 0) { sum += *(uint8_t *)buf; }
+	if (length > 0) { sum += *(unsigned char *)buf; }
 
 	while (sum >> 16) { sum = (sum & 0xFFFF) + (sum >> 16); }
 
-    return (uint16_t)~sum;
+    return ~sum;
 }
 
 void	add_to_list(t_ping_list **list, t_ping_list *new)
