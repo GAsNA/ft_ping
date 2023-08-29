@@ -63,7 +63,7 @@ void	init(int ac, char **av)
 		if (!ft_strcmp(av[i], "-?")) { help(); exit(0); }
 		else if (!ft_strcmp(av[i], "-v")) { g_ping.verbose = 1; }
 		else if (av[i][0] == '-') { unknown_argument(av[i]); exit(1); }
-		else { g_ping.addr = av[i]; }
+		else if (!g_ping.addr) { g_ping.addr = av[i]; }
 	}
 
 	if (!g_ping.addr) { no_destination_address(); exit(1); }
