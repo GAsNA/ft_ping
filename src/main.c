@@ -91,8 +91,9 @@ void	init(int ac, char **av)
 
 void	send_packet(struct icmphdr *icmp, struct timeval begin)
 {
-	icmp->checksum = calculate_icmp_checksum((void*)icmp, sizeof(*icmp));
 	icmp->un.echo.sequence++;
+	icmp->checksum = 0;
+	icmp->checksum = calculate_icmp_checksum((void*)icmp, sizeof(*icmp));
 		
 	// SEND PACKET
 	ssize_t	res = sendto(g_ping.socket_fd, icmp, sizeof(*icmp), 0,
@@ -147,7 +148,7 @@ void	receive_packet(void)
 	received_ping->diff = diff;
 
 	// PRINT INFORMATIONS ABOUT THIS PACKET
-	printf("%zd bytes from %s: icmp_seq=%d ttl=%d time=%.2f ms\n", ret, g_ping.ip,
+	printf("%zd bytes from %s: icmp_seq=%d ttl=%d time=%.3f ms\n", ret, g_ping.ip,
 				buf.icmp.un.echo.sequence, buf.ip.ttl, diff);
 
 	//MOVE THIS PACKET IN SAVE LIST
@@ -196,7 +197,7 @@ int	main(int ac, char **av)
 	icmp.code = 0;
 	icmp.checksum = 0;
 	icmp.un.echo.id = g_ping.id;
-	icmp.un.echo.sequence = 0;
+	icmp.un.echo.sequence = -1;
 	//icmp.un.gateway
 	//icmp.un.frag.__unused
 	//icmp.un.frag.mtu

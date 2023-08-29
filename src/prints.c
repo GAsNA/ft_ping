@@ -43,8 +43,8 @@ void	last_information(void)
 
 	get_stats_time(&min, &max, &avg, &mdev);
 
-	printf("\n--- %s ping statistics ---\n", g_ping.addr);
-	printf("%d packets transmitted, %d packets received, %.0f%% packet loss, time [NB]ms\n",
+	printf("--- %s ping statistics ---\n", g_ping.addr);
+	printf("%d packets transmitted, %d packets received, %.0f%% packet loss\n",
 				g_ping.sent, g_ping.received, loss);
-	printf("rtt min/avg/max/mdev = %.3f/%.3f/%.3f/%.3f ms\n", min, avg, max, mdev);
+	printf("round-trip min/avg/max/stddev = %.3f/%.3f/%.3f/%.3f ms", min, avg, max, mdev);
 }
