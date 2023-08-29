@@ -53,5 +53,6 @@ void	last_information(void)
 	printf("--- %s ping statistics ---\n", g_ping.addr);
 	printf("%d packets transmitted, %d packets received, %.0f%% packet loss\n",
 				g_ping.sent, g_ping.received, loss);
-	printf("round-trip min/avg/max/stddev = %.3f/%.3f/%.3f/%.3f ms\n", min, avg, max, mdev);
+	if (loss == 0)
+		printf("round-trip min/avg/max/stddev = %.3f/%.3f/%.3f/%.3f ms\n", min, avg, max, mdev);
 }

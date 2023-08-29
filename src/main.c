@@ -127,6 +127,16 @@ void	receive_packet(void)
 		else { return; }
 	}
 
+	if (buf.icmp.type == ICMP_DEST_UNREACH)
+	{
+		char hbuf[NI_MAXHOST];
+		if (getnameinfo(g_ping.addrinfo->ai_addr, g_ping.addrinfo->ai_addrlen, hbuf, sizeof(hbuf), NULL, 0, NI_NAMEREQD)) {
+			unknown_name_service(); exit(1); }
+
+		printf("%zd bytes from %s (%s): Destination Host Unreachable\n", ret, hbuf, g_ping.ip);
+		return;
+	}
+
 	if (buf.icmp.type != ICMP_ECHOREPLY) { return; }
 
 	if (buf.icmp.un.echo.id != g_ping.id) { return; }
