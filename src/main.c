@@ -60,16 +60,16 @@ void	init(int ac, char **av)
 
 	for(int i = 1; i < ac; i++)
 	{
-		if (!ft_strcmp(av[i], "-h")) { help(); exit(0); }
+		if (!ft_strcmp(av[i], "-?")) { help(); exit(0); }
 		else if (!ft_strcmp(av[i], "-v")) { g_ping.verbose = 1; }
-		else if (av[i][0] == '-') { unknown_argument(av[i]); help(); exit(1); }
+		else if (av[i][0] == '-') { unknown_argument(av[i]); exit(1); }
 		else { g_ping.addr = av[i]; }
 	}
 
 	if (!g_ping.addr) { no_destination_address(); exit(1); }
 
 	// GET INFO FROM ADDRESS
-	if (getaddrinfo(g_ping.addr, NULL, NULL, &g_ping.addrinfo)) { unknown_name_service(g_ping.addr); exit(1); }
+	if (getaddrinfo(g_ping.addr, NULL, NULL, &g_ping.addrinfo)) { unknown_name_service(); exit(1); }
 
 	// SOCKET
 	g_ping.socket_fd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
@@ -126,6 +126,8 @@ void	receive_packet(void)
 		if (errno != EAGAIN) { printf("ft_ping: error: recvmsg failed.\t%s\n", strerror(errno)); clear_all(); exit(1); }
 		else { return; }
 	}
+
+	if (buf.icmp.type != ICMP_ECHOREPLY) { return; }
 
 	if (buf.icmp.un.echo.id != g_ping.id) { return; }
 

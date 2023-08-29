@@ -67,8 +67,9 @@ double			pow(double x, double y);
 // PRINTS.C
 void		no_destination_address(void);
 void		help(void);
+void		try(void);
 void		unknown_argument(char *arg);
-void		unknown_name_service(char *name);
+void		unknown_name_service();
 void		first_information(void);
 void		last_information(void);
 
